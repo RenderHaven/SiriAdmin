@@ -16,7 +16,7 @@ router = APIRouter(prefix="/services", tags=["Services"])
 
 
 @router.get("", response_model=APIResponse)
-def get_services(db: Session = Depends(get_db), admin: Admin = Depends(get_current_admin)):
+def get_services(db: Session = Depends(get_db)):
     """Get all services."""
     services = db.query(Service).order_by(Service.created_at.desc()).all()
     return APIResponse(
@@ -49,7 +49,6 @@ def create_service(
 def get_service(
     service_id: int,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
 ):
     """Get a single service by ID."""
     service = db.query(Service).filter(Service.id == service_id).first()

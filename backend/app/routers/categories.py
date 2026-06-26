@@ -18,7 +18,7 @@ router = APIRouter(prefix="/categories", tags=["Categories"])
 
 
 @router.get("", response_model=APIResponse)
-def get_categories(db: Session = Depends(get_db), admin: Admin = Depends(get_current_admin)):
+def get_categories(db: Session = Depends(get_db)):
     """Get all categories ordered by display_order."""
     categories = db.query(Category).order_by(Category.display_order).all()
     return APIResponse(

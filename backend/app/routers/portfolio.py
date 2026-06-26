@@ -76,7 +76,6 @@ def get_images(
     page: int = 1,
     limit: int = 20,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
 ):
     """List portfolio images with optional category filter and pagination."""
     query = db.query(PortfolioImage)
