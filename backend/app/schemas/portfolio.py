@@ -26,6 +26,7 @@ class PortfolioImageUpdate(BaseModel):
     category_id: Optional[int] = None
     caption: Optional[str] = Field(None, max_length=500)
     display_order: Optional[int] = None
+    is_active: Optional[bool] = None
 
 
 class ImageReorderItem(BaseModel):
