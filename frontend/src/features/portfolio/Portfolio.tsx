@@ -200,7 +200,7 @@ export const Portfolio: React.FC = () => {
       const fetchedImages = await getApiData<PortfolioImage[]>(() =>
         apiClient.get(`/portfolio/images?page=1&limit=100${categoryFilter}`),
       )
-      return fetchedImages.sort((a, b) => a.display_order - b.display_order)
+      return [...fetchedImages].sort((a, b) => a.display_order - b.display_order)
     },
   })
 

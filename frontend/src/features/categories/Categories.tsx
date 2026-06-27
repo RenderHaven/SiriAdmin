@@ -124,7 +124,7 @@ export const Categories: React.FC = () => {
 
   // Fetch categories
   const {
-    data: categories = [],
+    data: categories,
     isLoading,
     isError,
     error,
@@ -133,16 +133,16 @@ export const Categories: React.FC = () => {
   } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: async () => {
-      const sorted = (await getApiData<Category[]>(() => apiClient.get('/categories'))).sort(
-        (a, b) => a.display_order - b.display_order,
-      )
-      return sorted
+      const items = await getApiData<Category[]>(() => apiClient.get('/categories'))
+      return [...items].sort((a, b) => a.display_order - b.display_order)
     },
   })
 
-  // Sync local state when remote changes
+  // Sync local state when remote data arrives or updates (avoid `= []` default — it creates a new array every render and loops)
   useEffect(() => {
-    setLocalCategories(categories)
+    if (categories) {
+      setLocalCategories(categories)
+    }
   }, [categories])
 
   // Create Category form
@@ -263,7 +263,7 @@ export const Categories: React.FC = () => {
       // Sync with server by running concurrent PUT requests for items that changed order
       try {
         const promises = remapped.map((cat) => {
-          const original = categories.find(c => c.id === cat.id)
+          const original = categories?.find(c => c.id === cat.id)
           if (original && original.display_order !== cat.display_order) {
             return apiClient.put(`/categories/${cat.id}`, { display_order: cat.display_order })
           }
@@ -274,7 +274,7 @@ export const Categories: React.FC = () => {
         showToast('Category order updated!', 'success')
       } catch (err: any) {
         showToast('Failed to sync order with server', 'error')
-        setLocalCategories(categories) // revert on error
+        if (categories) setLocalCategories(categories) // revert on error
       }
     }
   }

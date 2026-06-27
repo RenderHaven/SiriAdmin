@@ -199,6 +199,24 @@ function FeaturedWork() {
     }),
   });
 
+  const categories = query.data?.categories;
+  const portfolioImages = query.data?.images;
+
+  const categoryMap = useMemo(
+    () => new Map((categories ?? []).map((c) => [c.id, c])),
+    [categories],
+  );
+  const images = useMemo(
+    () =>
+      (portfolioImages ?? [])
+        .filter((img) => {
+          const category = categoryMap.get(img.category_id);
+          return img.is_active !== false && category?.is_active !== false;
+        })
+        .slice(0, 7),
+    [portfolioImages, categoryMap],
+  );
+
   if (query.isLoading) return <SectionSkeleton rows={4} />;
   if (query.isError) {
     return (
@@ -209,22 +227,6 @@ function FeaturedWork() {
   }
 
   if (!query.data) return <SectionSkeleton rows={4} />;
-
-  const { categories, images: data } = query.data;
-  const categoryMap = useMemo(
-    () => new Map(categories.map((c) => [c.id, c])),
-    [categories],
-  );
-  const images = useMemo(
-    () =>
-      data
-        .filter((img) => {
-          const category = categoryMap.get(img.category_id);
-          return img.is_active !== false && category?.is_active !== false;
-        })
-        .slice(0, 7),
-    [data, categoryMap],
-  );
 
   if (!images.length) return null;
 
@@ -309,27 +311,16 @@ function FeaturedProjects() {
     }),
   });
 
-  if (query.isLoading) return null;
-  if (query.isError) {
-    return (
-      <section className="relative bg-card py-16">
-        <div className="mx-auto max-w-[1400px] px-6">
-          <InlineErrorCard error={query.error} onRetry={() => query.refetch()} isRetrying={query.isFetching} />
-        </div>
-      </section>
-    );
-  }
+  const categories = query.data?.categories;
+  const portfolioImages = query.data?.images;
 
-  if (!query.data) return null;
-
-  const { categories, images: data } = query.data;
   const categoryMap = useMemo(
-    () => new Map(categories.map((c) => [c.id, c])),
+    () => new Map((categories ?? []).map((c) => [c.id, c])),
     [categories],
   );
   const projects = useMemo(
     () =>
-      data
+      (portfolioImages ?? [])
         .filter((img) => {
           const c = categoryMap.get(img.category_id);
           return img.is_active !== false && c?.is_active !== false;
@@ -346,8 +337,21 @@ function FeaturedProjects() {
               "Brand storytelling for a heritage textile label, photographed in the lanes where the craft began.",
             ][i],
         })),
-    [data, categoryMap],
+    [portfolioImages, categoryMap],
   );
+
+  if (query.isLoading) return null;
+  if (query.isError) {
+    return (
+      <section className="relative bg-card py-16">
+        <div className="mx-auto max-w-[1400px] px-6">
+          <InlineErrorCard error={query.error} onRetry={() => query.refetch()} isRetrying={query.isFetching} />
+        </div>
+      </section>
+    );
+  }
+
+  if (!query.data) return null;
 
   if (!projects.length) return null;
 

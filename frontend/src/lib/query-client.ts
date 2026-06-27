@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
-import { shouldRetryQuery } from '@/lib/api-errors'
+import { getRetryDelayMs, shouldRetryQuery } from '@/lib/api-errors'
 
 export function createQueryClient() {
   return new QueryClient({
@@ -7,6 +7,7 @@ export function createQueryClient() {
       queries: {
         refetchOnWindowFocus: false,
         retry: shouldRetryQuery,
+        retryDelay: getRetryDelayMs,
         staleTime: 30_000,
       },
       mutations: {

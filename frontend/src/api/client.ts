@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { classifyAxiosError } from '@/lib/api-errors'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
-const REQUEST_TIMEOUT_MS = 15_000
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const REQUEST_TIMEOUT_MS = 30_000
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

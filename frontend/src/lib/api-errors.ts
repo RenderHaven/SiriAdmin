@@ -79,8 +79,22 @@ export function classifyFetchError(error: unknown, status?: number, message?: st
   return new ApiError('unknown', message || getErrorMessage(error), { cause: error })
 }
 
+export function isCancelledRequest(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false
+
+  const maybeAxios = error as { code?: string; name?: string; message?: string }
+  if (maybeAxios.code === 'ERR_CANCELED' || maybeAxios.name === 'CanceledError') return true
+
+  if (error instanceof DOMException && error.name === 'AbortError') return true
+
+  return false
+}
+
 export function classifyAxiosError(error: unknown): ApiError {
   if (error instanceof ApiError) return error
+  if (isCancelledRequest(error)) {
+    return new ApiError('unknown', 'Request was cancelled.', { cause: error })
+  }
 
   if (typeof error === 'object' && error !== null && 'isAxiosError' in error && (error as { isAxiosError?: boolean }).isAxiosError) {
     const axiosError = error as {
@@ -121,8 +135,17 @@ export function classifyAxiosError(error: unknown): ApiError {
 }
 
 export function shouldRetryQuery(failureCount: number, error: unknown): boolean {
-  if (failureCount >= 2) return false
+  if (isCancelledRequest(error)) return false
   if (!isApiError(error)) return failureCount < 1
   if (['not_found', 'unauthorized', 'forbidden', 'invalid_response'].includes(error.kind)) return false
-  return true
+  // Serverless cold starts (Vercel + DB wake-up) can take several seconds — retry a bit longer
+  if (isConnectionError(error)) return failureCount < 4
+  return failureCount < 2
+}
+
+export function getRetryDelayMs(failureCount: number, error: unknown): number {
+  if (isConnectionError(error)) {
+    return Math.min(1500 * 2 ** failureCount, 12_000)
+  }
+  return Math.min(1000 * 2 ** failureCount, 30_000)
 }

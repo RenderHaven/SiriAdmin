@@ -7,7 +7,7 @@ import {
 const API_BASE =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "/api";
 
-const REQUEST_TIMEOUT_MS = 15_000;
+const REQUEST_TIMEOUT_MS = 30_000;
 
 export type APIResponse<T = unknown> = {
   success: boolean;
