@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '@/api/client'
+import { apiClient, getApiData } from '@/api/client'
 import { PortfolioImage, Category } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Dialog } from '@/components/common/Dialog'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
+import { AdminQueryState } from '@/components/errors/AdminQueryState'
+import { SectionSkeleton } from '@/components/errors/LoadingSkeleton'
 import { 
   Plus, 
   Trash2, 
@@ -184,16 +186,21 @@ export const Portfolio: React.FC = () => {
   })
 
   // Fetch portfolio images
-  const { data: imagesData, isLoading: imagesLoading } = useQuery({
+  const {
+    data: imagesData,
+    isLoading: imagesLoading,
+    isError: imagesError,
+    error: imagesErr,
+    refetch: refetchImages,
+    isFetching: imagesFetching,
+  } = useQuery({
     queryKey: ['portfolio-images', selectedCategoryId],
     queryFn: async () => {
       const categoryFilter = selectedCategoryId ? `&category_id=${selectedCategoryId}` : ''
-      const res = await apiClient.get(`/portfolio/images?page=1&limit=100${categoryFilter}`)
-      
-      const fetchedImages = res.data.data as PortfolioImage[]
-      // Sort by display order
-      const sorted = fetchedImages.sort((a, b) => a.display_order - b.display_order)
-      return sorted
+      const fetchedImages = await getApiData<PortfolioImage[]>(() =>
+        apiClient.get(`/portfolio/images?page=1&limit=100${categoryFilter}`),
+      )
+      return fetchedImages.sort((a, b) => a.display_order - b.display_order)
     },
   })
 
@@ -415,12 +422,15 @@ export const Portfolio: React.FC = () => {
       </div>
 
       {/* Visual Portfolio Grid */}
-      {imagesLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Loader2 className="w-8 h-8 text-zinc-400 animate-spin" />
-          <p className="text-sm text-zinc-500 font-medium">Loading portfolio items...</p>
-        </div>
-      ) : localImagesList.length > 0 ? (
+      <AdminQueryState
+        isLoading={imagesLoading}
+        isError={imagesError}
+        error={imagesErr}
+        onRetry={() => refetchImages()}
+        isFetching={imagesFetching}
+        skeleton={<SectionSkeleton rows={4} />}
+      >
+      {localImagesList.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <DndContext 
             sensors={sensors}
@@ -468,6 +478,7 @@ export const Portfolio: React.FC = () => {
           }
         />
       )}
+      </AdminQueryState>
 
       {/* UPLOAD PORTFOLIO IMAGE MODAL */}
       <Dialog

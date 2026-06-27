@@ -1,6 +1,6 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/api/client'
+import { apiClient, getApiData } from '@/api/client'
 import { DashboardData, Booking } from '@/types'
 import { 
   Image as ImageIcon, 
@@ -15,24 +15,33 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '@/components/common/PageHeader'
+import { InlineErrorCard } from '@/components/errors/InlineErrorCard'
+import { AdminCardSkeleton, AdminTableSkeleton } from '@/components/errors/LoadingSkeleton'
 
 export const Dashboard: React.FC = () => {
   // Fetch dashboard summary statistics
-  const { data: stats, isLoading: statsLoading } = useQuery<DashboardData>({
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    isError: statsError,
+    error: statsErr,
+    refetch: refetchStats,
+    isFetching: statsFetching,
+  } = useQuery<DashboardData>({
     queryKey: ['dashboard-stats'],
-    queryFn: async () => {
-      const res = await apiClient.get('/dashboard')
-      return res.data.data
-    },
+    queryFn: () => getApiData(() => apiClient.get('/dashboard')),
   })
 
-  // Fetch recent bookings (limit to 5)
-  const { data: recentBookings, isLoading: bookingsLoading } = useQuery<Booking[]>({
+  const {
+    data: recentBookings,
+    isLoading: bookingsLoading,
+    isError: bookingsError,
+    error: bookingsErr,
+    refetch: refetchBookings,
+    isFetching: bookingsFetching,
+  } = useQuery<Booking[]>({
     queryKey: ['recent-bookings'],
-    queryFn: async () => {
-      const res = await apiClient.get('/bookings?page=1&limit=5')
-      return res.data.data
-    },
+    queryFn: () => getApiData(() => apiClient.get('/bookings?page=1&limit=5')),
   })
 
   const cards = [
@@ -93,11 +102,17 @@ export const Dashboard: React.FC = () => {
       />
 
       {/* Stats Grid */}
+      {statsError ? (
+        <InlineErrorCard
+          error={statsErr}
+          variant="admin"
+          onRetry={() => refetchStats()}
+          isRetrying={statsFetching}
+        />
+      ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsLoading
-          ? Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-32 bg-white border border-zinc-200 rounded-2xl animate-pulse" />
-            ))
+          ? <AdminCardSkeleton count={4} />
           : cards.map((card, index) => (
               <div
                 key={index}
@@ -113,6 +128,7 @@ export const Dashboard: React.FC = () => {
               </div>
             ))}
       </div>
+      )}
 
       {/* Main split grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -124,7 +140,7 @@ export const Dashboard: React.FC = () => {
               <p className="text-xs text-zinc-500 mt-0.5">Manage details and update statuses</p>
             </div>
             <Link
-              to="/bookings"
+              to="/admin/bookings"
               className="flex items-center gap-1 text-xs font-semibold text-zinc-600 hover:text-zinc-900 transition-colors"
             >
               View All <ArrowRight className="w-4 h-4" />
@@ -132,12 +148,15 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="flex-1 overflow-x-auto">
-            {bookingsLoading ? (
-              <div className="space-y-4 py-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-14 bg-zinc-50 rounded-xl animate-pulse" />
-                ))}
-              </div>
+            {bookingsError ? (
+              <InlineErrorCard
+                error={bookingsErr}
+                variant="admin"
+                onRetry={() => refetchBookings()}
+                isRetrying={bookingsFetching}
+              />
+            ) : bookingsLoading ? (
+              <AdminTableSkeleton rows={3} />
             ) : recentBookings && recentBookings.length > 0 ? (
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
@@ -187,14 +206,14 @@ export const Dashboard: React.FC = () => {
             <h3 className="font-bold text-zinc-900 text-lg mb-4">Quick Shortcuts</h3>
             <div className="grid grid-cols-2 gap-4">
               <Link
-                to="/portfolio"
+                to="/admin/portfolio"
                 className="flex flex-col items-center justify-center p-4 border border-zinc-100 hover:border-zinc-300 rounded-2xl bg-zinc-50/50 hover:bg-zinc-50 transition-all text-center group"
               >
                 <ImageIcon className="w-6 h-6 text-zinc-500 group-hover:text-zinc-900 transition-colors mb-2" />
                 <span className="text-xs font-semibold text-zinc-600 group-hover:text-zinc-950">Add Image</span>
               </Link>
               <Link
-                to="/categories"
+                to="/admin/categories"
                 className="flex flex-col items-center justify-center p-4 border border-zinc-100 hover:border-zinc-300 rounded-2xl bg-zinc-50/50 hover:bg-zinc-50 transition-all text-center group"
               >
                 <FolderTree className="w-6 h-6 text-zinc-500 group-hover:text-zinc-900 transition-colors mb-2" />

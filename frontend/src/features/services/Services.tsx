@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '@/api/client'
+import { apiClient, getApiData } from '@/api/client'
 import { Service } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -23,6 +23,8 @@ import {
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { AdminQueryState } from '@/components/errors/AdminQueryState'
+import { SectionSkeleton } from '@/components/errors/LoadingSkeleton'
 
 const serviceSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Max 200 characters'),
@@ -44,12 +46,16 @@ export const Services: React.FC = () => {
   const [deletingService, setDeletingService] = useState<Service | null>(null)
 
   // Fetch Services
-  const { data: services = [], isLoading } = useQuery<Service[]>({
+  const {
+    data: services = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery<Service[]>({
     queryKey: ['services'],
-    queryFn: async () => {
-      const res = await apiClient.get('/services')
-      return res.data.data
-    },
+    queryFn: () => getApiData(() => apiClient.get('/services')),
   })
 
   // Create Service Form
@@ -170,12 +176,15 @@ export const Services: React.FC = () => {
       />
 
       {/* Services Showcase Cards */}
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Loader2 className="w-8 h-8 text-zinc-400 animate-spin" />
-          <p className="text-sm text-zinc-500 font-medium">Loading packages...</p>
-        </div>
-      ) : services.length > 0 ? (
+      <AdminQueryState
+        isLoading={isLoading}
+        isError={isError}
+        error={error}
+        onRetry={() => refetch()}
+        isFetching={isFetching}
+        skeleton={<SectionSkeleton rows={3} />}
+      >
+      {services.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service) => (
             <div
@@ -263,6 +272,7 @@ export const Services: React.FC = () => {
           }
         />
       )}
+      </AdminQueryState>
 
       {/* CREATE PACKAGE MODAL */}
       <Dialog

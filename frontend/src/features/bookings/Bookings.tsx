@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '@/api/client'
+import { apiClient, getApiData } from '@/api/client'
 import { Booking, Service } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Dialog } from '@/components/common/Dialog'
 import { EmptyState } from '@/components/common/EmptyState'
+import { AdminQueryState } from '@/components/errors/AdminQueryState'
+import { AdminTableSkeleton } from '@/components/errors/LoadingSkeleton'
 import { 
   Clock, 
   CheckCircle, 
@@ -50,7 +52,14 @@ export const Bookings: React.FC = () => {
   })
 
   // Fetch Bookings list (paginated & filtered)
-  const { data: bookingsData, isLoading } = useQuery({
+  const {
+    data: bookingsData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ['bookings', page, statusFilter],
     queryFn: async () => {
       const statusQuery = statusFilter ? `&status=${statusFilter}` : ''
@@ -173,12 +182,15 @@ export const Bookings: React.FC = () => {
 
       {/* Bookings Table */}
       <div className="bg-white border border-zinc-200 rounded-2xl shadow-xs overflow-hidden">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 className="w-8 h-8 text-zinc-400 animate-spin" />
-            <p className="text-sm text-zinc-500 font-medium">Loading inquiries...</p>
-          </div>
-        ) : filteredBookings.length > 0 ? (
+        <AdminQueryState
+          isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={() => refetch()}
+          isFetching={isFetching}
+          skeleton={<AdminTableSkeleton rows={6} />}
+        >
+        {filteredBookings.length > 0 ? (
           <div className="flex flex-col">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-sm">
@@ -273,6 +285,7 @@ export const Bookings: React.FC = () => {
             icon={<FileText className="w-10 h-10 text-zinc-400" />}
           />
         )}
+        </AdminQueryState>
       </div>
 
       {/* VIEW DETAILS MODAL */}

@@ -16,11 +16,11 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
   const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { name: 'Categories', path: '/categories', icon: <FolderTree className="w-5 h-5" /> },
-    { name: 'Portfolio', path: '/portfolio', icon: <ImageIcon className="w-5 h-5" /> },
-    { name: 'Services', path: '/services', icon: <Camera className="w-5 h-5" /> },
-    { name: 'Bookings', path: '/bookings', icon: <CalendarDays className="w-5 h-5" /> },
+    { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+    { name: 'Categories', path: '/admin/categories', icon: <FolderTree className="w-5 h-5" /> },
+    { name: 'Portfolio', path: '/admin/portfolio', icon: <ImageIcon className="w-5 h-5" /> },
+    { name: 'Services', path: '/admin/services', icon: <Camera className="w-5 h-5" /> },
+    { name: 'Bookings', path: '/admin/bookings', icon: <CalendarDays className="w-5 h-5" /> },
   ]
 
   return (
@@ -54,15 +54,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
             {item.name}
           </NavLink>
         ))}
-        {import.meta.env.VITE_PUBLIC_SITE ? (
-          <NavLink
-            to={import.meta.env.VITE_PUBLIC_SITE}
+        <NavLink
+            to="/"
             className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
           >
             <Share className="w-5 h-5" />
             <span>View Site</span>
           </NavLink>
-        ) : null}
       </nav>
 
       {/* Footer / Copyright */}

@@ -8,7 +8,7 @@ export const DashboardLayout: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex">
+    <div className="admin-shell min-h-screen bg-zinc-50 flex">
       {/* Desktop Sidebar (Left-anchored) */}
       <div className="hidden lg:block w-64 shrink-0">
         <Sidebar />

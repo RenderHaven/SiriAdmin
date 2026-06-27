@@ -11,7 +11,7 @@ SiriAdmin is a full-stack Content Management System (CMS) built to manage Siri P
 ```
 SiriAdmin/
 ├── backend/          # FastAPI + PostgreSQL REST API
-├── frontend/         # React + Tailwind CSS Admin Dashboard
+├── frontend/         # Unified React app (public site + admin dashboard)
 └── docs/             # Project documentation (PRD, API Contract, DB Model)
 ```
 
@@ -166,12 +166,7 @@ cd frontend
 npm install
 ```
 
-The frontend is pre-configured to connect to `http://localhost:8000/api/v1`. To change this, update:
-
-```ts
-// src/api/client.ts
-const API_BASE_URL = 'http://localhost:8000/api/v1'
-```
+The unified frontend serves the public portfolio at `/` and the admin dashboard at `/admin`. Both connect to `/api`. For local development, Vite proxies `/api` to `http://localhost:8000`.
 
 #### Start the Dev Server
 
@@ -179,7 +174,8 @@ const API_BASE_URL = 'http://localhost:8000/api/v1'
 npm run dev
 ```
 
-Dashboard will be available at: `http://localhost:5173`
+- Portfolio: `http://localhost:5173/`
+- Admin: `http://localhost:5173/admin`
 
 #### Build for Production
 
@@ -188,6 +184,16 @@ npm run build
 ```
 
 Output is in `frontend/dist/`.
+
+---
+
+## Deployment Routes
+
+| URL | App |
+|---|---|
+| `/` | Public portfolio website |
+| `/admin` | Admin dashboard |
+| `/api` | FastAPI backend |
 
 ---
 

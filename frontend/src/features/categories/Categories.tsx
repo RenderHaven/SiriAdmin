@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '@/api/client'
+import { apiClient, getApiData } from '@/api/client'
 import { Category } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -11,6 +11,8 @@ import { Plus, Edit2, Trash2, Loader2, FolderTree, Search, GripVertical } from '
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { AdminQueryState } from '@/components/errors/AdminQueryState'
+import { AdminTableSkeleton } from '@/components/errors/LoadingSkeleton'
 
 // dnd-kit
 import {
@@ -121,12 +123,19 @@ export const Categories: React.FC = () => {
   const [deletingCategory, setDeletingCategory] = useState<Category | null>(null)
 
   // Fetch categories
-  const { data: categories = [], isLoading } = useQuery<Category[]>({
+  const {
+    data: categories = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: async () => {
-      const res = await apiClient.get('/categories')
-      // sort by display_order to ensure safe rendering
-      const sorted = (res.data.data as Category[]).sort((a, b) => a.display_order - b.display_order)
+      const sorted = (await getApiData<Category[]>(() => apiClient.get('/categories'))).sort(
+        (a, b) => a.display_order - b.display_order,
+      )
       return sorted
     },
   })
@@ -300,12 +309,15 @@ export const Categories: React.FC = () => {
 
       {/* Main Categories table */}
       <div className="bg-white border border-zinc-200 rounded-2xl shadow-xs overflow-hidden">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 className="w-8 h-8 text-zinc-400 animate-spin" />
-            <p className="text-sm text-zinc-500 font-medium animate-pulse">Loading categories...</p>
-          </div>
-        ) : filteredCategories.length > 0 ? (
+        <AdminQueryState
+          isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={() => refetch()}
+          isFetching={isFetching}
+          skeleton={<AdminTableSkeleton rows={6} />}
+        >
+        {filteredCategories.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
@@ -358,6 +370,7 @@ export const Categories: React.FC = () => {
             }
           />
         )}
+        </AdminQueryState>
       </div>
 
       {/* CREATE CATEGORY MODAL */}
