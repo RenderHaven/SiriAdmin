@@ -1,12 +1,13 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { 
-  LayoutDashboard, 
-  FolderTree, 
-  Image as ImageIcon, 
-  Camera, 
+import {
+  LayoutDashboard,
+  FolderTree,
+  Image as ImageIcon,
+  Camera,
   CalendarDays,
-  CameraIcon
+  CameraIcon,
+  Share
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -43,10 +44,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
             to={item.path}
             onClick={onCloseMobile}
             className={({ isActive }) =>
-              `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isActive
-                  ? 'bg-zinc-900 text-white shadow-xs'
-                  : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'
+              `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
+                ? 'bg-zinc-900 text-white shadow-xs'
+                : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'
               }`
             }
           >
@@ -54,6 +54,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
             {item.name}
           </NavLink>
         ))}
+        {import.meta.env.VITE_PUBLIC_SITE ? (
+          <NavLink
+            to={import.meta.env.VITE_PUBLIC_SITE}
+            className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+          >
+            <Share className="w-5 h-5" />
+            <span>View Site</span>
+          </NavLink>
+        ) : null}
       </nav>
 
       {/* Footer / Copyright */}

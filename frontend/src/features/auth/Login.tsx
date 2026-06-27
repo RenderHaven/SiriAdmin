@@ -56,7 +56,9 @@ export const Login: React.FC = () => {
           <div className="w-12 h-12 rounded-2xl bg-zinc-900 flex items-center justify-center text-white shadow-lg mb-4">
             <Camera className="w-6 h-6" />
           </div>
+          <a href={import.meta.env.VITE_PUBLIC_SITE || "#"} className="text-sm text-zinc-500 hover:text-zinc-400">View Public Site</a>
           <h2 className="text-2xl font-bold tracking-tight text-zinc-900">Welcome Back</h2>
+
           <p className="text-sm text-zinc-500 mt-1">Sign in to manage your photography studio</p>
         </div>
 
@@ -125,6 +127,7 @@ export const Login: React.FC = () => {
               )}
             </button>
           </form>
+
         </div>
       </div>
     </div>
